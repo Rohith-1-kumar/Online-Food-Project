@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BiteDash | Local Restaurant Ordering, Menu Management & Delivery Logistics</title>
+  <meta name="description" content="Connecting customers, local restaurants, and delivery personnel with real-time order tracking and scheduled deliveries." />
+
+  <!-- FontAwesome 6 & Stylesheet -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+
+  <!-- ==========================================
+       HEADER & NAVIGATION BAR
+       ========================================== -->
+  <header class="header">
+    <div class="nav-container">
+      
+      <!-- Brand Logo -->
+      <a href="#" class="logo-brand" onclick="backToDiscovery(); return false;">
+        <div class="logo-icon-wrap">
+          <i class="fas fa-bolt"></i>
+        </div>
+        <div class="logo-text">
+          Bite<span>Dash</span>
+        </div>
+      </a>
+
+      <!-- 3-Role View Switcher (Core Requirement) -->
+      <div class="role-switcher">
+        <button class="role-tab-btn active" data-role="customer">
+          <i class="fas fa-store"></i> Customer View
+        </button>
+        <button class="role-tab-btn" data-role="restaurant">
+          <i class="fas fa-kitchen-set"></i> Restaurant Portal
+        </button>
+        <button class="role-tab-btn" data-role="driver">
+          <i class="fas fa-motorcycle"></i> Delivery Partner
+        </button>
+      </div>
+
+      <!-- Location Selector (Editable) -->
+      <div class="location-selector" id="locationSelectorBtn" onclick="openAddressModal()" title="Click to change or edit delivery address">
+        <i class="fas fa-location-dot"></i>
+        <div class="location-info">
+          <span class="location-label">Deliver to</span>
+          <span class="location-value" id="headerLocationText">Block-B, KLU Campus <i class="fas fa-chevron-down" style="font-size: 0.65rem; margin-left: 2px;"></i></span>
+        </div>
+      </div>
+
+      <!-- Live Search Bar -->
+      <div class="header-search">
+        <i class="fas fa-search"></i>
+        <input type="text" id="searchInput" placeholder="Search biryani, pizza, restaurant..." />
+      </div>
+
+      <!-- Nav Actions -->
+      <div class="nav-actions">
+        <!-- Live Track Order Trigger -->
+        <button class="track-order-nav-btn" onclick="openOrderTrackerModal()" title="View Live Order Tracking">
+          <span class="pulse-dot"></span> Track Order
+        </button>
+
+        <!-- Theme Toggle -->
+        <button class="theme-toggle-btn" title="Toggle Light/Dark Theme">
+          <i class="fas fa-sun"></i>
+        </button>
+
+        <!-- Favorites Button -->
+        <button class="fav-toggle-btn" id="favTriggerBtn" title="Saved Favorites">
+          <i class="fas fa-heart"></i>
+          <span class="badge-count" id="favBadge">0</span>
+        </button>
+
+        <!-- Auth / Login Button -->
+        <button class="auth-btn" onclick="openAuthModal()" title="Login or Register">
+          <i class="fas fa-user-circle" style="margin-right: 0.35rem; color: var(--primary);"></i> Login
+        </button>
+
+        <!-- Shopping Cart Trigger -->
+        <button class="cart-btn-main" id="cartTriggerBtn" title="Open Basket">
+          <i class="fas fa-shopping-bag"></i>
+          <span>Cart</span>
+          <span class="cart-btn-count" id="cartBadge">0</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ==========================================
+       VIEW 1: CUSTOMER STOREFRONT VIEW (Swiggy / Zomato Architecture)
+       ========================================== -->
+  <div class="view-panel active" id="customerView">
+    
+    <!-- SUB-VIEW 1A: RESTAURANT DISCOVERY HOME -->
+    <div id="restaurantDiscoveryView">
+
+      <!-- Hero Promotion Section -->
+      <section class="hero-section">
+        <div class="hero-banner">
+          <div class="hero-bg-glow"></div>
+          <div class="hero-content">
+            <div class="hero-badge">
+              <i class="fas fa-fire"></i> SPECIAL OFFER • 50% FLAT OFF ON FIRST ORDER
+            </div>
+            <h1 class="hero-title">
+              Connect With Local Kitchens. <br /><span>Order & Schedule Deliveries.</span>
+            </h1>
+            <p class="hero-desc">
+              Browse menus from top-rated local restaurants, customize dishes, schedule deliveries, and track preparation to your doorstep in real time.
+            </p>
+            <div class="hero-stats">
+              <div class="stat-item">
+                <span class="stat-value">7 Local</span>
+                <span class="stat-label">Partner Kitchens</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-value">15-25 Mins</span>
+                <span class="stat-label">Avg Delivery Speed</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-value">4.9 ★</span>
+                <span class="stat-label">Verified Ratings</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="hero-visual">
+            <div class="hero-featured-card" onclick="openRestaurantDetail('r1')" style="cursor: pointer;" title="Click to view Bawarchi Dum Biryani House Menu">
+              <img src="images/biryani.jpg" alt="Featured Biryani" class="hero-card-img" />
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <h4 style="font-size: 0.95rem; font-weight: 700;">Dum Biryani</h4>
+                  <span style="font-size: 0.78rem; color: #FDE047;">★ 5.0 • Bawarchi House</span>
+                </div>
+                <span style="font-size: 1.1rem; font-weight: 800; color: #FF5A5F;">₹349</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Category Inspiration Track ("What's on your mind?") -->
+      <section class="categories-section">
+        <div class="section-head-row">
+          <div>
+            <h2 class="section-title"><i class="fas fa-utensils"></i> What's on your mind?</h2>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Explore cuisines & click to open restaurant menu</p>
+          </div>
+        </div>
+        <div class="categories-track" id="categoriesTrack">
+          <!-- Rendered dynamically in app.js -->
+        </div>
+      </section>
+
+      <!-- Featured Local Restaurants Section (Zomato/Swiggy Core Model) -->
+      <section class="restaurants-section">
+        <div class="section-head-row">
+          <div>
+            <h2 class="section-title"><i class="fas fa-store"></i> Top Local Restaurants Near You</h2>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Click on any restaurant to open its full dedicated menu and dishes</p>
+          </div>
+          <div class="restaurant-filters" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <button class="diet-btn active" id="restFilterAll" onclick="filterRestaurantCards('all')">All Kitchens</button>
+            <button class="diet-btn" id="restFilterRating" onclick="filterRestaurantCards('rating')">★ 4.8+ Top Rated</button>
+            <button class="diet-btn" id="restFilterFast" onclick="filterRestaurantCards('fast')">⚡ Fast Delivery (&lt;20m)</button>
+            <button class="diet-btn" id="restFilterVeg" onclick="filterRestaurantCards('veg')">🥦 Veg Friendly</button>
+          </div>
+        </div>
+        <div class="restaurants-track" id="restaurantsTrack">
+          <!-- Rendered dynamically from RESTAURANTS array in app.js -->
+        </div>
+      </section>
+
+      <!-- Campus Favorites / Quick Picks Across Kitchens Section -->
+      <section class="popular-dishes-section">
+        <div class="section-head-row">
+          <div>
+            <h2 class="section-title"><i class="fas fa-fire"></i> Campus Favorites & Quick Picks</h2>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Top rated dishes across our partner kitchens</p>
+          </div>
+        </div>
+        <div class="popular-dishes-grid" id="popularDishesGrid">
+          <!-- Popular items rendered dynamically in app.js -->
+        </div>
+      </section>
+
+    </div>
+
+    <!-- SUB-VIEW 1B: DEDICATED RESTAURANT VIEW (Swiggy / Zomato Architecture) -->
+    <div id="restaurantDetailView" class="restaurant-detail-view" style="display: none;">
+      <!-- Back Navigation Bar with Swipe Gesture Hint -->
+      <div class="back-nav-bar">
+        <button class="back-nav-btn" onclick="backToDiscovery()">
+          <i class="fas fa-arrow-left"></i> Back to Restaurants
+        </button>
+        <div class="swipe-back-pill" title="You can swipe right anywhere on this screen to go back">
+          <i class="fas fa-hand-point-right"></i>
+          <span>Swipe right with finger to return home</span>
+        </div>
+      </div>
+
+      <!-- Dedicated Restaurant Banner, Offers, Filters and Dish Rows -->
+      <div id="restaurantDetailContent">
+        <!-- Rendered dynamically by renderSwiggyRestaurantPage() in app.js -->
+      </div>
+    </div>
+
+    <!-- Floating Bottom Cart Bar (Swiggy / Zomato style) -->
+    <div class="floating-cart-bar" id="floatingCartBar" style="display: none;" onclick="toggleCartDrawer(true)">
+      <div style="display: flex; align-items: center; gap: 0.75rem;">
+        <i class="fas fa-shopping-bag" style="font-size: 1.15rem;"></i>
+        <span id="floatingCartCount" style="font-weight: 700; font-size: 0.95rem;">0 items | ₹0</span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 0.4rem; font-weight: 700; font-size: 0.9rem;">
+        <span>View Basket</span>
+        <i class="fas fa-arrow-right"></i>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ==========================================
+       VIEW 2: RESTAURANT ADMIN PORTAL PANEL (Core Requirement)
+       ========================================== -->
+  <div class="view-panel" id="restaurantView">
+    <div class="portal-container">
+      
+      <!-- Restaurant Header -->
+      <div class="portal-header">
+        <div class="portal-title-wrap">
+          <div class="portal-icon"><i class="fas fa-kitchen-set"></i></div>
+          <div>
+            <h2>Restaurant Kitchen & Menu Dashboard</h2>
+            <p style="color: var(--text-muted); font-size: 0.88rem;">Track incoming customer orders in real time & manage your restaurant dishes</p>
+          </div>
+        </div>
+        <button class="checkout-btn" style="width: auto; padding: 0.65rem 1.3rem;" onclick="openAddDishModal()">
+          <i class="fas fa-plus"></i> Add New Dish to Menu
+        </button>
+      </div>
+
+      <!-- Restaurant Live Stats -->
+      <div class="portal-stats-row">
+        <div class="portal-stat-card">
+          <div class="stat-icon-bg"><i class="fas fa-receipt"></i></div>
+          <div>
+            <div style="font-size: 1.35rem; font-weight: 800;">4 Active</div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">Incoming Orders</div>
+          </div>
+        </div>
+        <div class="portal-stat-card">
+          <div class="stat-icon-bg" style="background: rgba(16, 185, 129, 0.15); color: #10B981;"><i class="fas fa-rupee-sign"></i></div>
+          <div>
+            <div style="font-size: 1.35rem; font-weight: 800;">₹12,450</div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">Today's Revenue</div>
+          </div>
+        </div>
+        <div class="portal-stat-card">
+          <div class="stat-icon-bg" style="background: rgba(59, 130, 246, 0.15); color: #3B82F6;"><i class="fas fa-burger"></i></div>
+          <div>
+            <div style="font-size: 1.35rem; font-weight: 800;">8 Dishes</div>
+            <div style="font-size: 0.78rem; color: var(--text-muted);">In Live Menu</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Incoming Orders Live Queue -->
+      <h3 style="margin-bottom: 0.85rem; font-size: 1.25rem;"><i class="fas fa-bell" style="color: var(--primary);"></i> Incoming Orders Feed (Real-Time)</h3>
+      <div class="admin-orders-grid" id="adminOrdersGrid">
+        <!-- Rendered in app.js -->
+      </div>
+
+      <!-- Menu Inventory & Price Control -->
+      <h3 style="margin-bottom: 0.85rem; font-size: 1.25rem;"><i class="fas fa-tasks" style="color: var(--primary);"></i> Manage Restaurant Menu & Availability</h3>
+      <div style="background: var(--bg-card); border: 1px solid var(--border-color); border-radius: var(--radius-md); overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+          <thead>
+            <tr style="background: var(--bg-secondary); border-bottom: 1px solid var(--border-color); font-size: 0.82rem; color: var(--text-muted);">
+              <th style="padding: 0.9rem;">DISH & RESTAURANT</th>
+              <th style="padding: 0.9rem;">CATEGORY</th>
+              <th style="padding: 0.9rem;">PRICE</th>
+              <th style="padding: 0.9rem;">STOCK STATUS</th>
+              <th style="padding: 0.9rem;">ACTION</th>
+            </tr>
+          </thead>
+          <tbody id="adminMenuTableBody">
+            <!-- Rendered in app.js -->
+          </tbody>
+        </table>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==========================================
+       VIEW 3: DELIVERY PERSONNEL PORTAL (Core Requirement)
+       ========================================== -->
+  <div class="view-panel" id="driverView">
+    <div class="portal-container">
+      
+      <!-- Driver Status Banner -->
+      <div class="driver-hero-card">
+        <div>
+          <span style="background: rgba(255, 255, 255, 0.2); padding: 0.25rem 0.75rem; border-radius: var(--radius-full); font-size: 0.78rem; font-weight: 700;">
+            <i class="fas fa-circle" style="color: #6EE7B7; font-size: 0.55rem;"></i> DRIVER ONLINE & READY
+          </span>
+          <h2 style="font-size: 1.65rem; margin-top: 0.4rem; color: white;">Alex Rider's Delivery Logistics</h2>
+          <p style="opacity: 0.9; font-size: 0.9rem;">Handle last-mile pickups from local kitchens and deliver hot food to customers.</p>
+        </div>
+        <div style="text-align: right;">
+          <div style="font-size: 1.85rem; font-weight: 800; color: white;">₹2,450</div>
+          <div style="font-size: 0.8rem; opacity: 0.85;">Earnings Today (6 Deliveries Completed)</div>
+        </div>
+      </div>
+
+      <!-- Pickups & Active Deliveries Columns -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.75rem;">
+        <div>
+          <h3 style="margin-bottom: 0.85rem; font-size: 1.15rem; display: flex; align-items: center; gap: 0.45rem;">
+            <i class="fas fa-box-open" style="color: var(--secondary);"></i> Orders Ready for Pickup
+          </h3>
+          <div class="driver-jobs-grid" id="driverAvailableJobs" style="grid-template-columns: 1fr;">
+            <!-- Pickups from restaurants -->
+          </div>
+        </div>
+
+        <div>
+          <h3 style="margin-bottom: 0.85rem; font-size: 1.15rem; display: flex; align-items: center; gap: 0.45rem;">
+            <i class="fas fa-motorcycle" style="color: var(--primary);"></i> Active Last-Mile Deliveries
+          </h3>
+          <div class="driver-jobs-grid" id="driverActiveJobs" style="grid-template-columns: 1fr;">
+            <!-- Active transit jobs -->
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==========================================
+       CART DRAWER WITH DELIVERY SCHEDULING (Core Requirement)
+       ========================================== -->
+  <div class="cart-drawer" id="cartDrawer">
+    <div class="cart-header">
+      <h3 class="cart-title"><i class="fas fa-shopping-bag" style="color: var(--primary);"></i> Your Food Basket</h3>
+      <button class="modal-close-btn" id="closeCartBtn" style="position: static;"><i class="fas fa-times"></i></button>
+    </div>
+
+    <!-- Delivery Address Quick Indicator in Cart (Editable) -->
+    <div class="cart-address-strip" onclick="openAddressModal()" title="Click to change delivery address">
+      <div style="display: flex; align-items: center; gap: 0.6rem; flex: 1; overflow: hidden;">
+        <div class="cart-addr-icon"><i class="fas fa-location-dot"></i></div>
+        <div style="overflow: hidden;">
+          <span class="cart-addr-label">DELIVERING TO</span>
+          <span class="cart-addr-val" id="cartAddressText">Block-B, KLU Campus, Vaddeswaram</span>
+        </div>
+      </div>
+      <button class="cart-addr-change-btn" type="button">EDIT</button>
+    </div>
+
+    <!-- Single Restaurant Indicator in Cart (Swiggy/Zomato Rule) -->
+    <div class="cart-restaurant-strip" id="cartRestaurantStrip" style="display: none;">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
+        <div style="display: flex; align-items: center; gap: 0.45rem; font-size: 0.8rem; overflow: hidden;">
+          <i class="fas fa-store" style="color: var(--primary); flex-shrink: 0;"></i>
+          <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">Ordering from: <strong id="cartRestaurantName" style="color: var(--text-main);">...</strong></span>
+        </div>
+        <button type="button" class="cart-clear-btn" onclick="clearCart()" title="Discard basket">Clear</button>
+      </div>
+    </div>
+
+    <!-- Delivery Option Scheduling Box -->
+    <div style="padding: 1rem 1.25rem 0; border-bottom: 1px solid var(--border-color);">
+      <div class="schedule-box">
+        <label class="form-label" style="margin-bottom: 0.5rem;"><i class="far fa-clock" style="color: var(--primary);"></i> Choose Delivery Timing:</label>
+        <div class="schedule-options-toggle">
+          <button class="schedule-type-btn active" data-type="asap" onclick="selectDeliveryType('asap')">
+            <i class="fas fa-bolt"></i> Deliver ASAP (20m)
+          </button>
+          <button class="schedule-type-btn" data-type="scheduled" onclick="selectDeliveryType('scheduled')">
+            <i class="far fa-calendar-alt"></i> Schedule for Later
+          </button>
+        </div>
+
+        <!-- Hidden slot chips when scheduled is selected -->
+        <div class="schedule-picker-wrap" id="schedulePickerWrap">
+          <span style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-bottom: 0.35rem;">Available Time Slots:</span>
+          <div>
+            <span class="slot-chip active" onclick="selectTimeSlot(this, 'Today, 08:00 PM - 08:30 PM')">Today 8:00 PM</span>
+            <span class="slot-chip" onclick="selectTimeSlot(this, 'Today, 09:00 PM - 09:30 PM')">Today 9:00 PM</span>
+            <span class="slot-chip" onclick="selectTimeSlot(this, 'Tomorrow, 01:00 PM - 01:30 PM')">Tmrw 1:00 PM</span>
+            <span class="slot-chip" onclick="selectTimeSlot(this, 'Tomorrow, 08:00 PM - 08:30 PM')">Tmrw 8:00 PM</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cart-items-list" id="cartItemsList">
+      <!-- Dynamic cart dishes -->
+    </div>
+
+    <div class="cart-footer">
+      <div class="promo-input-group">
+        <input type="text" id="promoInput" placeholder="Promo code (e.g. FEAST50)" />
+        <button class="promo-btn" onclick="applyPromoCode()">Apply</button>
+      </div>
+
+      <div class="bill-summary">
+        <div class="bill-row">
+          <span>Subtotal</span>
+          <span id="subtotalPrice">₹0</span>
+        </div>
+        <div class="bill-row">
+          <span>Promo Discount</span>
+          <span id="discountPrice" style="color: #10B981;">-₹0</span>
+        </div>
+        <div class="bill-row">
+          <span>Taxes & GST (5%)</span>
+          <span id="taxPrice">₹0</span>
+        </div>
+        <div class="bill-row">
+          <span>Delivery Charge</span>
+          <span>₹40</span>
+        </div>
+        <div class="bill-row total">
+          <span>Grand Total</span>
+          <span id="grandTotalPrice" style="color: var(--primary);">₹0</span>
+        </div>
+      </div>
+
+      <button class="checkout-btn" onclick="openCheckoutModal()">
+        Proceed to Checkout <i class="fas fa-arrow-right" style="margin-left: 0.4rem;"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       FOOD CUSTOMIZER MODAL
+       ========================================== -->
+  <div class="modal-overlay" id="customizerModal">
+    <div class="modal-card">
+      <button class="modal-close-btn" onclick="closeCustomizerModal()"><i class="fas fa-times"></i></button>
+      <div id="customizerContent">
+        <!-- Rendered in app.js -->
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       SWIGGY / ZOMATO REPLACE CART WARNING MODAL
+       Enforces single-restaurant ordering at a time
+       ========================================== -->
+  <div class="modal-overlay" id="replaceCartModal">
+    <div class="modal-card replace-cart-card">
+      <button class="modal-close-btn" onclick="closeReplaceCartModal()"><i class="fas fa-times"></i></button>
+
+      <div class="replace-cart-icon-wrap">
+        <i class="fas fa-store-slash"></i>
+      </div>
+
+      <h3 style="font-size: 1.35rem; font-weight: 800; color: var(--text-main); margin-bottom: 0.45rem;">
+        Replace cart item?
+      </h3>
+      <p style="font-size: 0.86rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 1.35rem;">
+        Your basket already contains items from <strong id="replaceCartOldRest" style="color: var(--primary);">Bawarchi Dum Biryani</strong>.<br/>
+        Would you like to discard the previous selection and start a new order from <strong id="replaceCartNewRest" style="color: var(--text-main);">Punjab Grill</strong>?
+      </p>
+
+      <div style="display: flex; gap: 0.75rem;">
+        <button type="button" class="back-nav-btn" style="flex: 1; justify-content: center; font-size: 0.85rem;" onclick="closeReplaceCartModal()">
+          Keep Previous
+        </button>
+        <button type="button" class="checkout-btn" style="flex: 1.2; justify-content: center; background: #EF4444; font-size: 0.85rem;" onclick="confirmReplaceCartAndAdd()">
+          <i class="fas fa-trash-can"></i> Discard & Add
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       CHECKOUT MODAL (With Editable Address & UPI QR Payment)
+       ========================================== -->
+  <div class="modal-overlay" id="checkoutModal">
+    <div class="modal-card checkout-modal-card">
+      <button class="modal-close-btn" onclick="closeCheckoutModal()"><i class="fas fa-times"></i></button>
+      
+      <div class="checkout-header">
+        <h2 style="font-size: 1.35rem; display: flex; align-items: center; gap: 0.5rem;">
+          <i class="fas fa-shield-halved" style="color: #10B981;"></i> Complete Your Order
+        </h2>
+        <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 2px;">Review delivery details and choose your payment method</p>
+      </div>
+
+      <!-- Step 1: Editable Delivery Address & Contact -->
+      <div class="checkout-section-card">
+        <div class="checkout-card-head">
+          <span class="checkout-card-title">
+            <i class="fas fa-location-dot" style="color: var(--primary);"></i> 1. Delivery Address & Contact
+          </span>
+          <button type="button" class="checkout-change-link" onclick="openAddressModal()">
+            <i class="fas fa-pen"></i> Select Preset / Change
+          </button>
+        </div>
+
+        <div class="form-group" style="margin-bottom: 0.65rem;">
+          <textarea id="checkoutAddress" required rows="2" class="form-input checkout-addr-textarea" placeholder="Enter complete delivery address (Hostel / Dept / Room)...">Block-B Hostels, KLU Campus, Vaddeswaram</textarea>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+          <div>
+            <label class="form-label" style="font-size: 0.75rem;">Contact Number</label>
+            <input type="tel" id="checkoutPhone" required value="+91 98765 43210" class="form-input" placeholder="Phone number" />
+          </div>
+          <div>
+            <label class="form-label" style="font-size: 0.75rem;">Delivery Instructions</label>
+            <input type="text" id="checkoutNotes" class="form-input" placeholder="e.g. Leave at security desk" />
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 2: Payment Method Tabs (UPI with image.png, Card, COD) -->
+      <div class="checkout-section-card">
+        <div class="checkout-card-head">
+          <span class="checkout-card-title">
+            <i class="fas fa-wallet" style="color: var(--secondary);"></i> 2. Choose Payment Method
+          </span>
+          <span class="checkout-amount-badge" id="checkoutTotalBadge">₹0</span>
+        </div>
+
+        <div class="payment-method-tabs">
+          <button type="button" class="pay-method-tab active" id="payTabUpi" onclick="switchPaymentMethod('upi')">
+            <i class="fas fa-qrcode"></i>
+            <span>UPI / QR Code</span>
+          </button>
+          <button type="button" class="pay-method-tab" id="payTabCard" onclick="switchPaymentMethod('card')">
+            <i class="fas fa-credit-card"></i>
+            <span>Card</span>
+          </button>
+          <button type="button" class="pay-method-tab" id="payTabCod" onclick="switchPaymentMethod('cod')">
+            <i class="fas fa-money-bill-wave"></i>
+            <span>Cash on Delivery</span>
+          </button>
+        </div>
+
+        <!-- Payment Option A: UPI Payment with image.png -->
+        <div class="pay-panel active" id="payPanelUpi">
+          <div class="upi-box">
+            <div class="upi-head-info">
+              <div class="upi-amount-pill">
+                <span>Total Payable:</span>
+                <strong id="upiAmountValue">₹0</strong>
+              </div>
+              <span class="upi-secure-badge"><i class="fas fa-shield-check"></i> Instant Verified</span>
+            </div>
+
+            <!-- UPI QR Frame with images/image.png -->
+            <div class="upi-qr-wrapper">
+              <div class="upi-qr-white-card">
+                <img src="images/image.png" alt="Scan to Pay via UPI" class="upi-qr-image" />
+              </div>
+              <div class="upi-qr-instructions">
+                <div class="upi-verified-badge">
+                  <i class="fas fa-shield-check"></i> BiteDash Verified Merchant
+                </div>
+                <h4 class="upi-scan-title">Scan QR Code to Pay via any UPI App</h4>
+                <div class="upi-apps-icons">
+                  <span class="upi-app-pill"><i class="fab fa-google-pay"></i> GPay</span>
+                  <span class="upi-app-pill"><i class="fas fa-bolt"></i> PhonePe</span>
+                  <span class="upi-app-pill"><i class="fas fa-wallet"></i> Paytm</span>
+                  <span class="upi-app-pill"><i class="fas fa-building-columns"></i> BHIM</span>
+                  <span class="upi-app-pill"><i class="fas fa-credit-card"></i> CRED</span>
+                </div>
+                <p class="upi-sub-notice">Open any UPI app on your phone, scan the QR code above & approve payment</p>
+              </div>
+            </div>
+          </div>
+
+          <button type="button" class="checkout-btn pay-submit-btn" onclick="processOrderPlacement('UPI')">
+            <i class="fas fa-check-circle"></i> I Have Paid via UPI • Place Order
+          </button>
+        </div>
+
+        <!-- Payment Option B: Credit / Debit Card -->
+        <div class="pay-panel" id="payPanelCard" style="display: none;">
+          <div class="card-box" style="margin-bottom: 1rem;">
+            <div class="form-group">
+              <label class="form-label">Card Number</label>
+              <input type="text" class="form-input" placeholder="4532 •••• •••• 8892" maxlength="19" value="4532 8921 4402 8892" />
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label">Expiry Date</label>
+                <input type="text" class="form-input" placeholder="MM/YY" maxlength="5" value="09/28" />
+              </div>
+              <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label">CVV</label>
+                <input type="password" class="form-input" placeholder="•••" maxlength="3" value="382" />
+              </div>
+            </div>
+          </div>
+          <button type="button" class="checkout-btn pay-submit-btn" onclick="processOrderPlacement('Card')">
+            <i class="fas fa-lock"></i> Pay Securely via Card • Place Order
+          </button>
+        </div>
+
+        <!-- Payment Option C: Cash on Delivery -->
+        <div class="pay-panel" id="payPanelCod" style="display: none;">
+          <div class="cod-box" style="margin-bottom: 1rem; background: var(--bg-card); padding: 1.15rem; border-radius: var(--radius-md); border: 1px solid var(--border-color);">
+            <div style="display: flex; gap: 0.75rem; align-items: center;">
+              <i class="fas fa-hand-holding-dollar" style="font-size: 2.2rem; color: #10B981;"></i>
+              <div>
+                <h4 style="font-size: 0.95rem;">Cash on Delivery</h4>
+                <p style="font-size: 0.8rem; color: var(--text-muted);">Please keep exact cash ready to hand over to the delivery partner upon arrival.</p>
+              </div>
+            </div>
+          </div>
+          <button type="button" class="checkout-btn pay-submit-btn" onclick="processOrderPlacement('Cash on Delivery')">
+            <i class="fas fa-check"></i> Confirm Cash on Delivery Order
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ==========================================
+       PAYMENT COMPLETED SUCCESS SCREEN (Zomato / Swiggy Style)
+       ========================================== -->
+  <div class="modal-overlay" id="paymentSuccessModal">
+    <div class="modal-card payment-success-card">
+      <button class="modal-close-btn" onclick="closePaymentSuccessModal()"><i class="fas fa-times"></i></button>
+
+      <!-- Glowing Green Animated Checkmark -->
+      <div class="payment-success-icon-wrap">
+        <i class="fas fa-check"></i>
+      </div>
+
+      <div class="payment-status-pill">
+        <i class="fas fa-check-circle"></i> Payment Completed
+      </div>
+
+      <h2 style="font-size: 1.65rem; font-weight: 800; margin-bottom: 0.35rem; color: var(--text-main);">
+        Order Placed Successfully!
+      </h2>
+      <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 1.25rem;">
+        Your payment has been verified & completed. The restaurant has started preparing your order!
+      </p>
+
+      <!-- Digital Receipt Card -->
+      <div class="payment-receipt-box">
+        <div class="payment-receipt-row">
+          <span class="payment-receipt-label">Order Number:</span>
+          <span class="payment-receipt-val" id="paySuccessOrderId" style="color: var(--primary);">#BD-849201</span>
+        </div>
+        <div class="payment-receipt-row">
+          <span class="payment-receipt-label">Amount Paid:</span>
+          <span class="payment-receipt-val" id="paySuccessTotal" style="color: #10B981; font-size: 1.05rem; font-weight: 800;">₹0</span>
+        </div>
+        <div class="payment-receipt-row">
+          <span class="payment-receipt-label">Payment Mode:</span>
+          <span class="payment-receipt-val" id="paySuccessMethod" style="font-size: 0.82rem;">UPI • TXN-Verified</span>
+        </div>
+        <div class="payment-receipt-row">
+          <span class="payment-receipt-label">Restaurant:</span>
+          <span class="payment-receipt-val" id="paySuccessRestaurant" style="font-weight: 700;">Bawarchi Dum Biryani House</span>
+        </div>
+        <div class="payment-receipt-row">
+          <span class="payment-receipt-label">Delivery To:</span>
+          <span class="payment-receipt-val" id="paySuccessAddress" style="font-size: 0.8rem; max-width: 240px; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Block-B Hostels</span>
+        </div>
+        <div class="payment-receipt-row">
+          <span class="payment-receipt-label">Items:</span>
+          <span class="payment-receipt-val" id="paySuccessItems" style="font-size: 0.8rem; max-width: 240px; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">2x Chicken Biryani</span>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div style="display: flex; flex-direction: column; gap: 0.65rem;">
+        <button type="button" class="checkout-btn" onclick="openOrderTrackerFromSuccess()">
+          <i class="fas fa-motorcycle"></i> Track Live Delivery Status
+        </button>
+        <button type="button" class="back-nav-btn" style="width: 100%; justify-content: center;" onclick="closePaymentSuccessModal()">
+          <i class="fas fa-store"></i> Return to Home & Explore More
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       ADDRESS & LOCATION SELECTOR MODAL (Editable)
+       ========================================== -->
+  <div class="modal-overlay" id="addressModal">
+    <div class="modal-card" style="max-width: 480px; padding: 1.75rem;">
+      <button class="modal-close-btn" onclick="closeAddressModal()"><i class="fas fa-times"></i></button>
+
+      <div style="margin-bottom: 1.25rem;">
+        <h2 style="font-size: 1.35rem; display: flex; align-items: center; gap: 0.45rem;">
+          <i class="fas fa-location-dot" style="color: var(--primary);"></i> Select Delivery Location
+        </h2>
+        <p style="color: var(--text-muted); font-size: 0.82rem;">Choose your campus preset or type any custom address</p>
+      </div>
+
+      <!-- Quick Campus Presets -->
+      <div style="margin-bottom: 1rem;">
+        <label class="form-label">Quick Campus Locations:</label>
+        <div class="address-presets-flex">
+          <button type="button" class="address-preset-chip active" onclick="setPresetAddress('Block-B Hostels, KLU Campus, Vaddeswaram')">
+            🏢 Block-B Hostels
+          </button>
+          <button type="button" class="address-preset-chip" onclick="setPresetAddress('Central Library, Ground Floor, KLU Campus')">
+            📚 Central Library
+          </button>
+          <button type="button" class="address-preset-chip" onclick="setPresetAddress('C-Block CSE Labs, 2nd Floor, KLU Campus')">
+            💻 C-Block CSE Labs
+          </button>
+          <button type="button" class="address-preset-chip" onclick="setPresetAddress('Campus Food Court & Main Gate, KLU Vaddeswaram')">
+            🍔 Food Court
+          </button>
+          <button type="button" class="address-preset-chip" onclick="setPresetAddress('Faculty & Guest Quarters, KLU Campus')">
+            🏡 Faculty Quarters
+          </button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Detailed Delivery Address:</label>
+        <textarea id="userAddressInput" rows="3" class="form-input" placeholder="Enter full address, hostel room, or landmark..."></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Delivery Note / Landmark (Optional):</label>
+        <input type="text" id="userAddressLandmark" class="form-input" placeholder="e.g. Leave with security / Call when nearby" />
+      </div>
+
+      <button type="button" class="checkout-btn" onclick="saveUserAddress()">
+        <i class="fas fa-check-circle"></i> Save & Deliver Here
+      </button>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       REAL-TIME LIVE ORDER TRACKER (Core Requirement)
+       ========================================== -->
+  <div class="modal-overlay" id="trackerModal">
+    <div class="modal-card" style="max-width: 580px; padding: 1.75rem;">
+      <button class="modal-close-btn" onclick="closeTrackerModal()"><i class="fas fa-times"></i></button>
+
+      <div style="text-align: center; margin-bottom: 1.25rem;">
+        <span class="hero-badge" style="background: rgba(16, 185, 129, 0.2); color: #10B981; border-color: rgba(16, 185, 129, 0.4);">
+          <i class="fas fa-circle-notch fa-spin"></i> REAL-TIME ORDER UPDATES
+        </span>
+        <h2 style="font-size: 1.5rem; margin-top: 0.4rem;">Order <span id="orderIdDisplay" style="color: var(--primary);">#BD-849201</span></h2>
+        <p style="color: var(--text-muted); font-size: 0.85rem;">
+          Restaurant: <strong id="trackerRestaurantName" style="color: var(--text-main);">Bawarchi Dum Biryani House</strong> • 
+          Timing: <strong id="trackerScheduleBadge" style="color: var(--secondary);">Instant Delivery</strong>
+        </p>
+
+        <div class="tracker-address-banner">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 0.5rem;">
+            <div style="display: flex; align-items: center; gap: 0.45rem; font-size: 0.8rem; text-align: left;">
+              <i class="fas fa-location-dot" style="color: var(--primary);"></i>
+              <span>Deliver to: <strong id="trackerAddressDisplay" style="color: var(--text-main);">Block-B Hostels, KLU Campus</strong></span>
+            </div>
+            <button type="button" class="tracker-edit-addr-btn" onclick="openAddressModal()"><i class="fas fa-pen"></i> Edit</button>
+          </div>
+        </div>
+
+        <!-- Estimated Delivery Arrival Banner -->
+        <div class="tracker-eta-card" id="trackerEtaCard">
+          <div class="tracker-eta-left">
+            <span class="tracker-eta-label"><i class="fas fa-bolt"></i> ESTIMATED ARRIVAL</span>
+            <span class="tracker-eta-time" id="trackerEtaTime">25-30 Mins</span>
+          </div>
+          <div class="tracker-eta-badge">
+            <i class="fas fa-shield-check"></i> On-Time Guarantee
+          </div>
+        </div>
+
+        <!-- Live Payment Completed Status Badge -->
+        <div class="tracker-payment-badge" id="trackerPaymentBadge">
+          <i class="fas fa-check-circle"></i>
+          <span id="trackerPaymentText">Payment Status: <strong>COMPLETED</strong> (Verified via UPI)</span>
+        </div>
+      </div>
+
+      <!-- Animated Road Map Simulation -->
+      <div class="tracker-map-container">
+        <div class="map-point start" title="Restaurant Kitchen"><i class="fas fa-utensils"></i></div>
+        <div class="road-path">
+          <div class="road-line" id="roadLine"></div>
+        </div>
+        <div class="driver-marker" id="driverMarker">
+          <i class="fas fa-motorcycle"></i>
+        </div>
+        <div class="map-point end" title="Customer Address"><i class="fas fa-home"></i></div>
+      </div>
+
+      <!-- Preparation & Delivery Status Stepper with Live Timestamps -->
+      <div class="tracker-timeline">
+        <div class="timeline-step active" id="tStep1">
+          <div class="timeline-icon"><i class="fas fa-check"></i></div>
+          <div class="timeline-content">
+            <div class="timeline-main">
+              <h4 style="font-size: 0.9rem;">Order Placed & Sent to Restaurant</h4>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Restaurant has received your order</span>
+            </div>
+            <div class="timeline-time-col">
+              <span class="step-time" id="tTime1">--:--</span>
+              <span class="step-time-tag done" id="tTag1">Confirmed</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="timeline-step" id="tStep2">
+          <div class="timeline-icon"><i class="fas fa-fire"></i></div>
+          <div class="timeline-content">
+            <div class="timeline-main">
+              <h4 style="font-size: 0.9rem;">Kitchen Preparation Status</h4>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Chef is cooking fresh ingredients in kitchen</span>
+            </div>
+            <div class="timeline-time-col">
+              <span class="step-time" id="tTime2">--:--</span>
+              <span class="step-time-tag eta" id="tTag2">Expected</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="timeline-step" id="tStep3">
+          <div class="timeline-icon"><i class="fas fa-motorcycle"></i></div>
+          <div class="timeline-content">
+            <div class="timeline-main">
+              <h4 style="font-size: 0.9rem;">Last-Mile Delivery Status</h4>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Delivery partner has picked up & is en route</span>
+            </div>
+            <div class="timeline-time-col">
+              <span class="step-time" id="tTime3">--:--</span>
+              <span class="step-time-tag eta" id="tTag3">Expected</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="timeline-step" id="tStep4">
+          <div class="timeline-icon"><i class="fas fa-home"></i></div>
+          <div class="timeline-content">
+            <div class="timeline-main">
+              <h4 style="font-size: 0.9rem;">Delivered</h4>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Handed over to customer</span>
+            </div>
+            <div class="timeline-time-col">
+              <span class="step-time" id="tTime4">--:--</span>
+              <span class="step-time-tag eta" id="tTag4">Expected</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align: center; margin-top: 1.25rem; background: var(--bg-secondary); padding: 0.75rem; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+        <p id="trackerStatusMsg" style="font-size: 0.88rem; font-weight: 600; color: var(--text-main);">
+          Order sent to restaurant! Waiting for kitchen confirmation...
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       ADD DISH MODAL (Restaurant Menu Management)
+       ========================================== -->
+  <div class="modal-overlay" id="addDishModal">
+    <div class="modal-card" style="max-width: 500px; padding: 1.75rem;">
+      <button class="modal-close-btn" onclick="closeAddDishModal()"><i class="fas fa-times"></i></button>
+      
+      <h2 style="font-size: 1.35rem; margin-bottom: 1.15rem;">Add New Dish to Restaurant Menu</h2>
+
+      <form onsubmit="handleAddDishSubmit(event)">
+        <div class="form-group">
+          <label class="form-label">Select Restaurant</label>
+          <select id="dishRestaurant" class="form-input">
+            <option value="r1">Bawarchi Dum Biryani House</option>
+            <option value="r2">Milano Woodfired Pizzeria</option>
+            <option value="r3">The Smash Burger Garage</option>
+            <option value="r4">Sakura Tokyo Sushi Bar</option>
+            <option value="r5">Pure Green Buddha Bowls</option>
+            <option value="r6">El Cantina Street Tacos</option>
+            <option value="r7">Velvet Chocolate Cafe & Boba</option>
+            <option value="r8">Punjab Grill & Tandoor Express</option>
+            <option value="r9">Madras Tiffin Room (MTR 1924)</option>
+            <option value="r10">Wok & Roll Asian Street</option>
+            <option value="r11">Haldiram's Sweets & Chaat Express</option>
+            <option value="r12">Chai Point & Irani Chai Bakery</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Dish Name</label>
+          <input type="text" id="dishName" required placeholder="e.g. Garlic Butter Naan & Paneer" class="form-input" />
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem;">
+          <div class="form-group">
+            <label class="form-label">Category</label>
+            <select id="dishCategory" class="form-input">
+              <option value="indian">Indian Biryani</option>
+              <option value="pizza">Pizza</option>
+              <option value="burgers">Burgers</option>
+              <option value="asian">Asian</option>
+              <option value="healthy">Healthy</option>
+              <option value="mexican">Mexican</option>
+              <option value="desserts">Desserts</option>
+              <option value="drinks">Drinks</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Price (₹)</label>
+            <input type="number" id="dishPrice" step="1" required placeholder="299" class="form-input" />
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem;">
+          <div class="form-group">
+            <label class="form-label">Prep Time</label>
+            <input type="text" id="dishPrepTime" value="15-20 min" class="form-input" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Diet</label>
+            <select id="dishDiet" class="form-input">
+              <option value="veg">Veg 🥦</option>
+              <option value="non-veg">Non-Veg 🥩</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Dish Image</label>
+          <select id="dishImage" class="form-input">
+            <option value="images/biryani.jpg">Royal Dum Biryani</option>
+            <option value="images/kebab.jpg">Tandoori Kebabs & Tikka</option>
+            <option value="images/fried_chicken.jpg">Crispy Chicken 65 / Tenders</option>
+            <option value="images/curry_naan.jpg">Curry with Garlic Naan</option>
+            <option value="images/north_indian.jpg">North Indian Butter Chicken</option>
+            <option value="images/south_indian.jpg">South Indian Ghee Dosa</option>
+            <option value="images/idli_vada.jpg">Idli & Medu Vada Tiffin</option>
+            <option value="images/filter_coffee.jpg">Madras Filter Coffee</option>
+            <option value="images/pizza.jpg">Woodfired Artisan Pizza</option>
+            <option value="images/pasta.jpg">Creamy Penne Alfredo Pasta</option>
+            <option value="images/burger.jpg">Double Smash Burger</option>
+            <option value="images/fries.jpg">Loaded Cheesy Fries</option>
+            <option value="images/shake.jpg">Thick Belgian Shake</option>
+            <option value="images/sushi.jpg">Tokyo Sushi Platter</option>
+            <option value="images/ramen.jpg">Japanese Miso Ramen</option>
+            <option value="images/momos.jpg">Steamed Momos & Dim Sum</option>
+            <option value="images/noodles.jpg">Schezwan Hakka Noodles</option>
+            <option value="images/fried_rice.jpg">Wok Fried Rice</option>
+            <option value="images/springroll.jpg">Crispy Spring Rolls</option>
+            <option value="images/healthy_bowl.jpg">Superfood Buddha Bowl</option>
+            <option value="images/tacos.jpg">Mexican Fiesta Tacos</option>
+            <option value="images/nachos.jpg">Loaded Cheesy Nachos</option>
+            <option value="images/quesadilla.jpg">Smoky Chicken Quesadilla</option>
+            <option value="images/churros.jpg">Cinnamon Sugar Churros</option>
+            <option value="images/chaat.jpg">Royal Raj Kachori / Pav Bhaji</option>
+            <option value="images/chaat_street.jpg">Pani Puri & Papdi Chaat</option>
+            <option value="images/indian_sweets.jpg">Gulab Jamun & Rasmalai</option>
+            <option value="images/chai.jpg">Kadak Irani / Kulhad Chai</option>
+            <option value="images/bun_maska.jpg">Toasted Bun Maska & Biscuits</option>
+            <option value="images/samosa.jpg">Crispy Punjabi Samosa & Puffs</option>
+            <option value="images/dessert.jpg">Chocolate Lava Cake</option>
+            <option value="images/waffle.jpg">Warm Belgian Nutella Waffle</option>
+            <option value="images/cheesecake.jpg">Lotus Biscoff Cheesecake</option>
+            <option value="images/cupcake.jpg">Red Velvet Cupcake</option>
+            <option value="images/boba.jpg">Artisan Boba Milk Tea</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <textarea id="dishDesc" required rows="2" class="form-input" placeholder="Fresh gourmet ingredients, slow-cooked with spices..."></textarea>
+        </div>
+
+        <button type="submit" class="checkout-btn" style="margin-top: 0.4rem;">Publish Dish to Live Menu</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       AUTH & AGE RESTRICTION MODAL
+       ========================================== -->
+  <div class="modal-overlay" id="authModal">
+    <div class="modal-card" style="max-width: 460px; padding: 1.75rem;">
+      <button class="modal-close-btn" onclick="closeAuthModal()"><i class="fas fa-times"></i></button>
+
+      <div class="auth-tabs">
+        <div class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Sign In</div>
+        <div class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">Register</div>
+      </div>
+
+      <!-- Login Form -->
+      <form id="loginForm" onsubmit="handleLoginSubmit(event)">
+        <div class="form-group">
+          <label class="form-label">Email / Phone</label>
+          <input type="text" id="loginEmail" required value="student@klu.ac.in" class="form-input" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" required value="••••••••" class="form-input" />
+        </div>
+        <button type="submit" class="checkout-btn" style="margin-top: 0.85rem;">Sign In to BiteDash</button>
+      </form>
+
+      <!-- Register Form with Age Verification -->
+      <form id="registerForm" style="display: none;" onsubmit="handleRegisterSubmit(event)">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input type="text" id="regName" required placeholder="e.g. Rohith Kumar" class="form-input" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" id="regEmail" required placeholder="name@domain.com" class="form-input" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Your Age (Age Verification Check)</label>
+          <input type="number" id="regAge" required min="10" max="100" placeholder="e.g. 20" class="form-input" />
+          <span style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-top: 2px;">
+            ⚠️ Note: Delivery Partners must be at least 18 years old.
+          </span>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Register As</label>
+          <select id="regRole" class="form-input">
+            <option value="customer">🛒 Customer (Order & Schedule)</option>
+            <option value="driver">🛵 Delivery Partner (18+ Required)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <input type="password" required placeholder="Create password" class="form-input" />
+        </div>
+        <button type="submit" class="checkout-btn" style="margin-top: 0.85rem;">Create Account</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==========================================
+       FOOTER
+       ========================================== -->
+  <footer class="footer">
+    <div class="footer-container">
+      <div>
+        <a href="#" class="logo-brand">
+          <div class="logo-icon-wrap"><i class="fas fa-bolt"></i></div>
+          <div class="logo-text">Bite<span>Dash</span></div>
+        </a>
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 0.65rem;">
+          Connecting customers with local restaurants, enabling menu browsing, order placement, scheduled deliveries, and last-mile logistics.
+        </p>
+      </div>
+
+      <div>
+        <h4 style="font-size: 0.95rem; margin-bottom: 0.65rem;">Role Portals</h4>
+        <ul class="footer-links">
+          <li><a href="#" onclick="document.querySelector('[data-role=customer]').click()">Customer Storefront & Menus</a></li>
+          <li><a href="#" onclick="document.querySelector('[data-role=restaurant]').click()">Restaurant Kitchen Management</a></li>
+          <li><a href="#" onclick="document.querySelector('[data-role=driver]').click()">Delivery Partner Logistics</a></li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 style="font-size: 0.95rem; margin-bottom: 0.65rem;">Platform Highlights</h4>
+        <ul class="footer-links">
+          <li><a href="#">Local Restaurant Directory</a></li>
+          <li><a href="#">Schedule Deliveries (Time Slots)</a></li>
+          <li><a href="#">Live Kitchen & Driver Tracking</a></li>
+          <li><a href="#">Age Restricted Verification Form</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>© 2026 BiteDash Multi-Role Food Delivery Platform • Pure HTML, CSS, JavaScript Project Evaluation Standards.</p>
+    </div>
+  </footer>
+
+  <!-- GSAP Animation Library CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+
+  <!-- Pure JavaScript Application Script -->
+  <script src="app.js"></script>
+</body>
+</html>
