@@ -31,13 +31,13 @@
       <!-- 3-Role View Switcher (Core Requirement) -->
       <div class="role-switcher">
         <button class="role-tab-btn active" data-role="customer">
-          <i class="fas fa-store"></i> Customer View
+          <i class="fas fa-store"></i> <span class="role-btn-text" data-mobile="Customer">Customer View</span>
         </button>
         <button class="role-tab-btn" data-role="restaurant">
-          <i class="fas fa-kitchen-set"></i> Restaurant Portal
+          <i class="fas fa-kitchen-set"></i> <span class="role-btn-text" data-mobile="Kitchen">Restaurant Portal</span>
         </button>
         <button class="role-tab-btn" data-role="driver">
-          <i class="fas fa-motorcycle"></i> Delivery Partner
+          <i class="fas fa-motorcycle"></i> <span class="role-btn-text" data-mobile="Driver">Delivery Partner</span>
         </button>
       </div>
 
@@ -60,7 +60,7 @@
       <div class="nav-actions">
         <!-- Live Track Order Trigger -->
         <button class="track-order-nav-btn" onclick="openOrderTrackerModal()" title="View Live Order Tracking">
-          <span class="pulse-dot"></span> Track Order
+          <span class="pulse-dot"></span> <span class="nav-btn-text">Track</span>
         </button>
 
         <!-- Theme Toggle -->
@@ -74,15 +74,38 @@
           <span class="badge-count" id="favBadge">0</span>
         </button>
 
-        <!-- Auth / Login Button -->
-        <button class="auth-btn" onclick="openAuthModal()" title="Login or Register">
-          <i class="fas fa-user-circle" style="margin-right: 0.35rem; color: var(--primary);"></i> Login
-        </button>
+        <!-- Auth / Profile Button with Dropdown -->
+        <div class="user-profile-wrap" id="userProfileWrap">
+          <button class="auth-btn" id="authBtnTrigger" onclick="handleAuthBtnClick(event)" title="Login or View Profile">
+            <i class="fas fa-user-circle" style="color: var(--primary);"></i> <span class="nav-btn-text" id="authBtnText">Login</span>
+          </button>
+          <div class="user-dropdown-menu" id="userDropdownMenu" style="display: none;">
+            <div class="user-dropdown-head">
+              <div class="user-dropdown-avatar"><i class="fas fa-user-shield"></i></div>
+              <div>
+                <strong id="dropdownUserName">Guest User</strong>
+                <span id="dropdownUserEmail" style="display: block; font-size: 0.72rem; color: var(--text-muted);">student@klu.ac.in</span>
+                <span id="dropdownUserRole" class="badge-role">Customer</span>
+              </div>
+            </div>
+            <div class="user-dropdown-divider"></div>
+            <button type="button" class="user-dropdown-item" onclick="openOrderTrackerModal(); toggleUserDropdown(false);">
+              <i class="fas fa-motorcycle" style="color: var(--primary);"></i> Track Active Order
+            </button>
+            <button type="button" class="user-dropdown-item" onclick="openAddressModal(); toggleUserDropdown(false);">
+              <i class="fas fa-location-dot" style="color: var(--secondary);"></i> Change Delivery Address
+            </button>
+            <div class="user-dropdown-divider"></div>
+            <button type="button" class="user-dropdown-item logout" onclick="logoutUser()">
+              <i class="fas fa-sign-out-alt"></i> Logout from Account
+            </button>
+          </div>
+        </div>
 
         <!-- Shopping Cart Trigger -->
         <button class="cart-btn-main" id="cartTriggerBtn" title="Open Basket">
           <i class="fas fa-shopping-bag"></i>
-          <span>Cart</span>
+          <span class="nav-btn-text">Cart</span>
           <span class="cart-btn-count" id="cartBadge">0</span>
         </button>
       </div>
@@ -318,7 +341,7 @@
       </div>
 
       <!-- Pickups & Active Deliveries Columns -->
-      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.75rem;">
+      <div class="driver-columns-grid">
         <div>
           <h3 style="margin-bottom: 0.85rem; font-size: 1.15rem; display: flex; align-items: center; gap: 0.45rem;">
             <i class="fas fa-box-open" style="color: var(--secondary);"></i> Orders Ready for Pickup
@@ -510,7 +533,7 @@
           <textarea id="checkoutAddress" required rows="2" class="form-input checkout-addr-textarea" placeholder="Enter complete delivery address (Hostel / Dept / Room)...">Block-B Hostels, KLU Campus, Vaddeswaram</textarea>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+        <div class="form-row-2col">
           <div>
             <label class="form-label" style="font-size: 0.75rem;">Contact Number</label>
             <input type="tel" id="checkoutPhone" required value="+91 98765 43210" class="form-input" placeholder="Phone number" />
@@ -900,7 +923,7 @@
           <input type="text" id="dishName" required placeholder="e.g. Garlic Butter Naan & Paneer" class="form-input" />
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem;">
+        <div class="form-row-2col">
           <div class="form-group">
             <label class="form-label">Category</label>
             <select id="dishCategory" class="form-input">
@@ -920,7 +943,7 @@
           </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.85rem;">
+        <div class="form-row-2col">
           <div class="form-group">
             <label class="form-label">Prep Time</label>
             <input type="text" id="dishPrepTime" value="15-20 min" class="form-input" />
@@ -986,60 +1009,154 @@
   </div>
 
   <!-- ==========================================
-       AUTH & AGE RESTRICTION MODAL
+       AUTH & LOGIN GATEWAY MODAL (Pure HTML, CSS, JS)
        ========================================== -->
   <div class="modal-overlay" id="authModal">
-    <div class="modal-card" style="max-width: 460px; padding: 1.75rem;">
-      <button class="modal-close-btn" onclick="closeAuthModal()"><i class="fas fa-times"></i></button>
+    <div class="modal-card auth-modal-card">
+      <button class="modal-close-btn" onclick="closeAuthModal()" title="Close"><i class="fas fa-times"></i></button>
 
-      <div class="auth-tabs">
-        <div class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Sign In</div>
-        <div class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">Register</div>
+      <!-- Modal Brand Header -->
+      <div class="auth-header">
+        <div class="auth-brand-badge">
+          <i class="fas fa-bolt"></i>
+        </div>
+        <h2 class="auth-title">Welcome to Bite<span>Dash</span></h2>
+        <p class="auth-subtitle">Connecting customers, local kitchens & delivery partners</p>
       </div>
 
-      <!-- Login Form -->
+      <!-- Real-time Auth Notice & Validation Message Box -->
+      <div id="authNoticeBox" class="auth-notice-box" style="display: none;"></div>
+
+      <!-- Tab Switcher: Sign In vs New User Sign Up -->
+      <div class="auth-tabs">
+        <button type="button" class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">
+          <i class="fas fa-sign-in-alt"></i> Sign In
+        </button>
+        <button type="button" class="auth-tab" id="tab-register" onclick="switchAuthTab('register')">
+          <i class="fas fa-user-plus"></i> New User? Sign Up
+        </button>
+      </div>
+
+      <!-- Form 1: Existing User Login Form -->
       <form id="loginForm" onsubmit="handleLoginSubmit(event)">
         <div class="form-group">
-          <label class="form-label">Email / Phone</label>
-          <input type="text" id="loginEmail" required value="student@klu.ac.in" class="form-input" />
+          <label class="form-label" for="loginEmail"><i class="far fa-envelope"></i> Email Address or Mobile</label>
+          <input type="text" id="loginEmail" required value="student@klu.ac.in" class="form-input" placeholder="e.g. student@klu.ac.in" />
         </div>
+
         <div class="form-group">
-          <label class="form-label">Password</label>
-          <input type="password" required value="••••••••" class="form-input" />
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.35rem;">
+            <label class="form-label" for="loginPassword" style="margin-bottom: 0;"><i class="fas fa-lock"></i> Password</label>
+            <span style="font-size: 0.72rem; color: var(--text-dim);">Default: password123</span>
+          </div>
+          <div class="password-input-wrap">
+            <input type="password" id="loginPassword" required value="password123" class="form-input" placeholder="Enter your password" />
+            <button type="button" class="pw-toggle-btn" onclick="togglePasswordVisibility('loginPassword', this)">
+              <i class="far fa-eye"></i>
+            </button>
+          </div>
         </div>
-        <button type="submit" class="checkout-btn" style="margin-top: 0.85rem;">Sign In to BiteDash</button>
+
+        <!-- Quick 1-Click Demo Profiles for Evaluators / Testers -->
+        <div class="quick-demo-accounts">
+          <span class="demo-label"><i class="fas fa-key"></i> Quick Demo Logins:</span>
+          <div class="demo-chips">
+            <button type="button" class="demo-chip" onclick="fillDemoUser('customer')" title="Login as Student / Customer">
+              🛒 Customer
+            </button>
+            <button type="button" class="demo-chip" onclick="fillDemoUser('driver')" title="Login as Delivery Partner">
+              🛵 Delivery Partner
+            </button>
+            <button type="button" class="demo-chip" onclick="fillDemoUser('restaurant')" title="Login as Restaurant Chef">
+              🍳 Restaurant Chef
+            </button>
+          </div>
+        </div>
+
+        <button type="submit" class="checkout-btn" style="margin-top: 0.85rem;">
+          <i class="fas fa-arrow-right-to-bracket"></i> Sign In to Account
+        </button>
+
+        <p class="auth-switch-prompt">
+          New to BiteDash? <a href="#" onclick="switchAuthTab('register'); return false;">Sign Up required for new users</a>
+        </p>
       </form>
 
-      <!-- Register Form with Age Verification -->
+      <!-- Form 2: New User Registration Form -->
       <form id="registerForm" style="display: none;" onsubmit="handleRegisterSubmit(event)">
         <div class="form-group">
-          <label class="form-label">Full Name</label>
+          <label class="form-label" for="regName"><i class="far fa-user"></i> Full Name</label>
           <input type="text" id="regName" required placeholder="e.g. Rohith Kumar" class="form-input" />
         </div>
-        <div class="form-group">
-          <label class="form-label">Email Address</label>
-          <input type="email" id="regEmail" required placeholder="name@domain.com" class="form-input" />
+
+        <div class="form-row-2col">
+          <div class="form-group">
+            <label class="form-label" for="regEmail"><i class="far fa-envelope"></i> Email Address</label>
+            <input type="email" id="regEmail" required placeholder="name@domain.com" class="form-input" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="regPhone"><i class="fas fa-phone"></i> Phone Number</label>
+            <input type="tel" id="regPhone" required placeholder="9876543210" class="form-input" />
+          </div>
         </div>
-        <div class="form-group">
-          <label class="form-label">Your Age (Age Verification Check)</label>
-          <input type="number" id="regAge" required min="10" max="100" placeholder="e.g. 20" class="form-input" />
-          <span style="font-size: 0.72rem; color: var(--text-muted); display: block; margin-top: 2px;">
-            ⚠️ Note: Delivery Partners must be at least 18 years old.
-          </span>
+
+        <div class="form-row-2col">
+          <div class="form-group">
+            <label class="form-label" for="regAge"><i class="fas fa-id-card"></i> Age (Years)</label>
+            <input type="number" id="regAge" required min="10" max="100" placeholder="e.g. 21" value="21" class="form-input" />
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="regRole"><i class="fas fa-user-tag"></i> Join BiteDash As</label>
+            <select id="regRole" class="form-input">
+              <option value="customer">🛒 Customer (Order & Schedule)</option>
+              <option value="driver">🛵 Delivery Partner (18+ Required)</option>
+              <option value="restaurant">🍳 Restaurant Kitchen / Manager</option>
+            </select>
+          </div>
         </div>
-        <div class="form-group">
-          <label class="form-label">Register As</label>
-          <select id="regRole" class="form-input">
-            <option value="customer">🛒 Customer (Order & Schedule)</option>
-            <option value="driver">🛵 Delivery Partner (18+ Required)</option>
-          </select>
+
+        <div class="form-row-2col">
+          <div class="form-group">
+            <label class="form-label" for="regPassword"><i class="fas fa-lock"></i> Password</label>
+            <div class="password-input-wrap">
+              <input type="password" id="regPassword" required placeholder="At least 4 chars" class="form-input" />
+              <button type="button" class="pw-toggle-btn" onclick="togglePasswordVisibility('regPassword', this)">
+                <i class="far fa-eye"></i>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="regConfirmPassword"><i class="fas fa-check-double"></i> Confirm</label>
+            <div class="password-input-wrap">
+              <input type="password" id="regConfirmPassword" required placeholder="Re-type password" class="form-input" />
+              <button type="button" class="pw-toggle-btn" onclick="togglePasswordVisibility('regConfirmPassword', this)">
+                <i class="far fa-eye"></i>
+              </button>
+            </div>
+          </div>
         </div>
-        <div class="form-group">
-          <label class="form-label">Password</label>
-          <input type="password" required placeholder="Create password" class="form-input" />
+
+        <div class="auth-age-notice">
+          <i class="fas fa-shield-halved" style="color: var(--secondary);"></i>
+          <span>Delivery Partners must be at least 18 years old. Customers must be 13+.</span>
         </div>
-        <button type="submit" class="checkout-btn" style="margin-top: 0.85rem;">Create Account</button>
+
+        <button type="submit" class="checkout-btn" style="margin-top: 0.85rem;">
+          <i class="fas fa-user-check"></i> Complete Sign Up & Start Ordering
+        </button>
+
+        <p class="auth-switch-prompt">
+          Already registered? <a href="#" onclick="switchAuthTab('login'); return false;">Sign In with existing account</a>
+        </p>
       </form>
+
+      <!-- Bottom Guest Mode Option -->
+      <div class="auth-guest-wrap">
+        <button type="button" class="auth-guest-btn" onclick="continueAsGuest()">
+          <i class="fas fa-compass"></i> Explore & Browse Restaurants as Guest
+        </button>
+      </div>
+
     </div>
   </div>
 

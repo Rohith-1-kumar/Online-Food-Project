@@ -1977,6 +1977,9 @@ document.addEventListener('DOMContentLoaded', () => {
   setupEventListeners();
   updateUserUI();
 
+  // Check login status on page open (check already logged in or new user)
+  checkInitialAuth();
+
   // GSAP Initial Entrance Animations
   initGSAPAnimations();
 });
@@ -2967,6 +2970,12 @@ function openCheckoutModal() {
     showToast('Your basket is empty! Add dishes first.', 'error');
     return;
   }
+  if (!state.currentUser) {
+    toggleCartDrawer(false);
+    showToast('Please sign in or create an account to proceed with checkout!', 'warning');
+    openAuthModal();
+    return;
+  }
   toggleCartDrawer(false);
   const modal = document.getElementById('checkoutModal');
   if (!modal) return;
@@ -3569,82 +3578,363 @@ function acceptDeliveryJob(orderId) {
 }
 
 /* ==========================================================================
-   AUTH & AGE RESTRICTION VERIFICATION MODAL
+   AUTHENTICATION & USER REGISTRATION (Pure HTML, CSS, JS)
+   - Checks if user is already logged in on page open
+   - Distinguishes existing registered users from new users
+   - If new user, requires sign up
+   - Enforces age verification (18+ for delivery partner, 13+ for customer)
    ========================================================================== */
-function openAuthModal() {
+const DEFAULT_USERS = [
+  {
+    name: "Rohith Kumar",
+    email: "student@klu.ac.in",
+    phone: "9876543210",
+    password: "password123",
+    age: 20,
+    role: "customer"
+  },
+  {
+    name: "Alex Rider",
+    email: "alex.driver@klu.ac.in",
+    phone: "9876543211",
+    password: "password123",
+    age: 24,
+    role: "driver"
+  },
+  {
+    name: "Chef Bawarchi",
+    email: "chef@bawarchi.com",
+    phone: "9876543212",
+    password: "chef123",
+    age: 32,
+    role: "restaurant"
+  }
+];
+
+function getRegisteredUsers() {
+  const stored = localStorage.getItem('bitedash_registered_users');
+  if (!stored) {
+    localStorage.setItem('bitedash_registered_users', JSON.stringify(DEFAULT_USERS));
+    return DEFAULT_USERS;
+  }
+  try {
+    const parsed = JSON.parse(stored);
+    return Array.isArray(parsed) && parsed.length > 0 ? parsed : DEFAULT_USERS;
+  } catch (e) {
+    return DEFAULT_USERS;
+  }
+}
+
+function saveRegisteredUser(user) {
+  const users = getRegisteredUsers();
+  users.push(user);
+  localStorage.setItem('bitedash_registered_users', JSON.stringify(users));
+}
+
+function checkInitialAuth() {
+  const activeUser = JSON.parse(localStorage.getItem('bitedash_user'));
+  if (activeUser && activeUser.name) {
+    state.currentUser = activeUser;
+    updateUserUI();
+    // User is already logged in - no interruption needed!
+  } else {
+    // User is NOT logged in: Prompt login / signup page automatically on open
+    setTimeout(() => {
+      openAuthModal(true);
+    }, 550);
+  }
+}
+
+function openAuthModal(isInitial = false) {
   const modal = document.getElementById('authModal');
   if (!modal) return;
   modal.classList.add('active');
 
+  if (isInitial) {
+    showAuthNotice('👋 Welcome to BiteDash! Please sign in with your account or sign up if you are a new user.', 'info');
+  } else {
+    clearAuthNotice();
+  }
+
   if (typeof gsap !== 'undefined') {
     gsap.fromTo(modal.querySelector('.modal-card'), 
-      { scale: 0.85, opacity: 0, y: 25 },
+      { scale: 0.88, opacity: 0, y: 20 },
       { scale: 1, opacity: 1, y: 0, duration: 0.35, ease: 'back.out(1.4)' }
     );
   }
 }
+
 function closeAuthModal() {
-  document.getElementById('authModal').classList.remove('active');
+  const modal = document.getElementById('authModal');
+  if (modal) modal.classList.remove('active');
+  clearAuthNotice();
 }
 
 function switchAuthTab(tabName) {
   document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById(`tab-${tabName}`).classList.add('active');
+  document.getElementById(`tab-${tabName}`)?.classList.add('active');
+  clearAuthNotice();
+
+  const loginForm = document.getElementById('loginForm');
+  const registerForm = document.getElementById('registerForm');
 
   if (tabName === 'login') {
-    document.getElementById('loginForm').style.display = 'block';
-    document.getElementById('registerForm').style.display = 'none';
+    if (loginForm) loginForm.style.display = 'block';
+    if (registerForm) registerForm.style.display = 'none';
   } else {
-    document.getElementById('loginForm').style.display = 'none';
-    document.getElementById('registerForm').style.display = 'block';
+    if (loginForm) loginForm.style.display = 'none';
+    if (registerForm) registerForm.style.display = 'block';
   }
 
   if (typeof gsap !== 'undefined') {
     gsap.fromTo(tabName === 'login' ? '#loginForm' : '#registerForm', 
       { opacity: 0, y: 8 },
-      { opacity: 1, y: 0, duration: 0.3 }
+      { opacity: 1, y: 0, duration: 0.28 }
     );
+  }
+}
+
+function showAuthNotice(msg, type = 'info') {
+  const box = document.getElementById('authNoticeBox');
+  if (!box) return;
+  box.innerHTML = msg;
+  box.className = `auth-notice-box ${type}`;
+  box.style.display = 'block';
+}
+
+function clearAuthNotice() {
+  const box = document.getElementById('authNoticeBox');
+  if (box) {
+    box.style.display = 'none';
+    box.innerHTML = '';
+  }
+}
+
+function togglePasswordVisibility(inputId, btn) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+  const isPw = input.type === 'password';
+  input.type = isPw ? 'text' : 'password';
+  const icon = btn.querySelector('i');
+  if (icon) {
+    icon.className = isPw ? 'far fa-eye-slash' : 'far fa-eye';
+  }
+}
+
+function fillDemoUser(role) {
+  const emailInput = document.getElementById('loginEmail');
+  const passInput = document.getElementById('loginPassword');
+  clearAuthNotice();
+
+  if (role === 'customer') {
+    if (emailInput) emailInput.value = 'student@klu.ac.in';
+    if (passInput) passInput.value = 'password123';
+    showAuthNotice('Filled demo Customer account (student@klu.ac.in). Click Sign In to continue.', 'info');
+  } else if (role === 'driver') {
+    if (emailInput) emailInput.value = 'alex.driver@klu.ac.in';
+    if (passInput) passInput.value = 'password123';
+    showAuthNotice('Filled demo Delivery Partner account (alex.driver@klu.ac.in). Click Sign In to continue.', 'info');
+  } else if (role === 'restaurant') {
+    if (emailInput) emailInput.value = 'chef@bawarchi.com';
+    if (passInput) passInput.value = 'chef123';
+    showAuthNotice('Filled demo Restaurant Chef account (chef@bawarchi.com). Click Sign In to continue.', 'info');
   }
 }
 
 function handleLoginSubmit(e) {
   e.preventDefault();
-  const email = document.getElementById('loginEmail').value;
-  state.currentUser = { name: email.split('@')[0], email: email, age: 22 };
+  clearAuthNotice();
+
+  const identifier = document.getElementById('loginEmail').value.trim();
+  const password = document.getElementById('loginPassword').value.trim();
+
+  if (!identifier) {
+    showAuthNotice('Please enter your email or phone number.', 'error');
+    return;
+  }
+
+  const users = getRegisteredUsers();
+  // Check if user exists by email or phone
+  const existingUser = users.find(u => 
+    (u.email && u.email.toLowerCase() === identifier.toLowerCase()) || 
+    (u.phone && u.phone === identifier)
+  );
+
+  // If user does not exist in registered users: Sign up is required!
+  if (!existingUser) {
+    showAuthNotice(
+      `⚠️ <strong>Account not found!</strong> No registered account matches "<em>${identifier}</em>".<br/>Since you are a new user, <strong>Sign Up is required</strong>. Redirecting to registration...`,
+      'warning'
+    );
+    setTimeout(() => {
+      switchAuthTab('register');
+      const regEmail = document.getElementById('regEmail');
+      const regPhone = document.getElementById('regPhone');
+      if (identifier.includes('@') && regEmail) {
+        regEmail.value = identifier;
+      } else if (regPhone) {
+        regPhone.value = identifier;
+      }
+      showAuthNotice(`Please fill in your details below to complete your new account registration.`, 'info');
+    }, 1100);
+    return;
+  }
+
+  // User exists! Verify password
+  if (existingUser.password && existingUser.password !== password) {
+    showAuthNotice('❌ <strong>Incorrect password!</strong> Please enter the correct password for your account.', 'error');
+    return;
+  }
+
+  // Successfully authenticated!
+  state.currentUser = {
+    name: existingUser.name,
+    email: existingUser.email,
+    phone: existingUser.phone || '',
+    age: existingUser.age || 20,
+    role: existingUser.role || 'customer'
+  };
   localStorage.setItem('bitedash_user', JSON.stringify(state.currentUser));
   updateUserUI();
   closeAuthModal();
   showToast(`Welcome back, ${state.currentUser.name}! 👋`, 'success');
+
+  // If user registered with a specific portal role, open it
+  if (state.currentUser.role === 'restaurant') {
+    document.querySelector('[data-role="restaurant"]')?.click();
+  } else if (state.currentUser.role === 'driver') {
+    document.querySelector('[data-role="driver"]')?.click();
+  }
 }
 
 function handleRegisterSubmit(e) {
   e.preventDefault();
-  const name = document.getElementById('regName').value;
-  const email = document.getElementById('regEmail').value;
+  clearAuthNotice();
+
+  const name = document.getElementById('regName').value.trim();
+  const email = document.getElementById('regEmail').value.trim().toLowerCase();
+  const phone = document.getElementById('regPhone')?.value.trim() || '';
   const age = parseInt(document.getElementById('regAge').value);
   const role = document.getElementById('regRole').value;
+  const password = document.getElementById('regPassword').value;
+  const confirmPassword = document.getElementById('regConfirmPassword')?.value;
 
+  if (confirmPassword && password !== confirmPassword) {
+    showAuthNotice('❌ Passwords do not match! Please verify both password fields.', 'error');
+    return;
+  }
+
+  if (password.length < 4) {
+    showAuthNotice('❌ Password must be at least 4 characters long.', 'error');
+    return;
+  }
+
+  // Age verification rules
   if (role === 'driver' && age < 18) {
-    showToast('Age Restriction Error: You must be at least 18 years old to register as a Delivery Partner!', 'error');
+    showAuthNotice('⚠️ Age Restriction Error: Delivery Partners must be at least 18 years old for logistics safety.', 'error');
     return;
   }
-
   if (age < 13) {
-    showToast('Age Restriction Error: You must be at least 13 years old to register.', 'error');
+    showAuthNotice('⚠️ Age Restriction Error: You must be at least 13 years old to register.', 'error');
     return;
   }
 
-  state.currentUser = { name, email, age, role };
+  // Check if account already exists
+  const users = getRegisteredUsers();
+  const emailTaken = users.some(u => u.email && u.email.toLowerCase() === email);
+  if (emailTaken) {
+    showAuthNotice(`⚠️ An account with email <strong>${email}</strong> already exists! Switching to Sign In...`, 'warning');
+    setTimeout(() => {
+      switchAuthTab('login');
+      const loginEmail = document.getElementById('loginEmail');
+      if (loginEmail) loginEmail.value = email;
+    }, 1100);
+    return;
+  }
+
+  // Save new user in database
+  const newUser = { name, email, phone, age, role, password };
+  saveRegisteredUser(newUser);
+
+  // Set as logged in
+  state.currentUser = { name, email, phone, age, role };
   localStorage.setItem('bitedash_user', JSON.stringify(state.currentUser));
   updateUserUI();
   closeAuthModal();
-  showToast(`Account created successfully! Welcome ${name}! 🎉`, 'success');
+  showToast(`🎉 Account created successfully! Welcome to BiteDash, ${name}!`, 'success');
+
+  // Navigate to corresponding view if role selected
+  if (role === 'driver') {
+    document.querySelector('[data-role="driver"]')?.click();
+  } else if (role === 'restaurant') {
+    document.querySelector('[data-role="restaurant"]')?.click();
+  }
+}
+
+function handleAuthBtnClick(e) {
+  if (e) e.stopPropagation();
+  if (!state.currentUser) {
+    openAuthModal();
+  } else {
+    toggleUserDropdown();
+  }
+}
+
+function toggleUserDropdown(forceState) {
+  const menu = document.getElementById('userDropdownMenu');
+  if (!menu) return;
+  const isShown = forceState !== undefined ? forceState : (menu.style.display !== 'none');
+  menu.style.display = isShown ? 'none' : 'block';
+}
+
+function logoutUser() {
+  state.currentUser = null;
+  localStorage.removeItem('bitedash_user');
+  updateUserUI();
+  toggleUserDropdown(false);
+  showToast('You have been logged out successfully.', 'info');
+  // Return to customer storefront view
+  document.querySelector('[data-role="customer"]')?.click();
+  // Prompt login screen again
+  setTimeout(() => {
+    openAuthModal(true);
+  }, 450);
+}
+
+function continueAsGuest() {
+  closeAuthModal();
+  showToast('Browsing BiteDash as Guest. Sign in anytime to complete orders!', 'info');
 }
 
 function updateUserUI() {
   const authBtn = document.querySelector('.auth-btn');
-  if (authBtn && state.currentUser) {
-    authBtn.innerHTML = `<i class="fas fa-user-circle" style="margin-right: 0.35rem; color: var(--primary);"></i> ${state.currentUser.name.substring(0, 10)}`;
+  const authBtnText = document.getElementById('authBtnText');
+  const dropdownUserName = document.getElementById('dropdownUserName');
+  const dropdownUserEmail = document.getElementById('dropdownUserEmail');
+  const dropdownUserRole = document.getElementById('dropdownUserRole');
+
+  if (state.currentUser && state.currentUser.name) {
+    const firstName = state.currentUser.name.split(' ')[0] || state.currentUser.name;
+    if (authBtnText) {
+      authBtnText.textContent = firstName.length > 9 ? firstName.substring(0, 8) + '..' : firstName;
+    }
+    if (authBtn) {
+      authBtn.classList.add('logged-in');
+      authBtn.title = `Logged in as ${state.currentUser.name} (Click for profile & logout)`;
+    }
+    if (dropdownUserName) dropdownUserName.textContent = state.currentUser.name;
+    if (dropdownUserEmail) dropdownUserEmail.textContent = state.currentUser.email || 'Registered User';
+    if (dropdownUserRole) {
+      dropdownUserRole.textContent = state.currentUser.role ? state.currentUser.role.toUpperCase() : 'CUSTOMER';
+    }
+  } else {
+    if (authBtnText) {
+      authBtnText.textContent = 'Login';
+    }
+    if (authBtn) {
+      authBtn.classList.remove('logged-in');
+      authBtn.title = 'Login or Register';
+    }
   }
 }
 
@@ -3664,6 +3954,14 @@ function setupEventListeners() {
 
   document.getElementById('favTriggerBtn')?.addEventListener('click', () => {
     showToast(`You have ${state.favorites.length} saved favorites! ❤️`, 'info');
+  });
+
+  // Close user dropdown if clicking outside
+  document.addEventListener('click', (e) => {
+    const wrap = document.getElementById('userProfileWrap');
+    if (wrap && !wrap.contains(e.target)) {
+      toggleUserDropdown(false);
+    }
   });
 
   const searchInput = document.getElementById('searchInput');
